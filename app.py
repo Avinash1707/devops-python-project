@@ -13,8 +13,11 @@ class AppHandler(BaseHTTPRequestHandler):
         )
 
 
-server = HTTPServer(("0.0.0.0", 8000), AppHandler)
+def main():
+    server = HTTPServer(("0.0.0.0", 8000), AppHandler)
+    print("Application running on port 8000")
+    server.serve_forever()
 
-print("Application running on port 8000")
 
-server.serve_forever()
+if __name__ == "__main__":
+    main()

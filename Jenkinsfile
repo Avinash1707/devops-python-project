@@ -20,19 +20,14 @@ pipeline {
             }
         }
 
-        stage('Test Application') {
-            steps {
-                bat 'docker rm -f jenkins-test-app 2>NUL || exit /b 0'
-                bat 'docker run -d --name jenkins-test-app -p 8002:8000 devops-python-app'
-                bat 'curl.exe --retry 10 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:8002/'
-            }
-        }
+       stage('Test Application') {
+    steps {
+        bat 'docker rm -f jenkins-test-app 2>NUL || exit /b 0'
+        bat 'docker run -d --name jenkins-test-app -p 8002:8000 devops-python-app'
+        bat 'timeout /t 5 /nobreak'
+        bat 'docker ps -a --filter name=jenkins-test-app'
+        bat 'docker logs jenkins-test-app'
+        bat 'curl.exe --fail http://127.0.0.1:8002/'
     }
-
-    post {
-        always {
-            bat 'docker rm -f jenkins-test-app 2>NUL || exit /b 0'
-            echo 'Pipeline execution completed.'
-        }
-    }
+}
 }

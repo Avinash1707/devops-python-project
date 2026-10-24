@@ -20,39 +20,35 @@ pipeline {
         }
 
         stage('Login to Docker Hub') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials-test',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_TOKEN'
-                    )
-                ]) {
-                    powershell '''
-                        $ErrorActionPreference = "Stop"
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-credentials-test',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_TOKEN'
+            )
+        ]) {
+            powershell '''
+                $user = $env:DOCKER_USER
+                $token = $env:DOCKER_TOKEN
 
-                        $user = $env:DOCKER_USER.Trim()
-                        $token = $env:DOCKER_TOKEN.Trim()
+                Write-Host "Username matches expected value: $($user -ceq 'avi1707')"
+                Write-Host "Token is present: $(-not [string]::IsNullOrEmpty($token))"
+                Write-Host "Token length: $($token.Length)"
+                Write-Host "Token has surrounding whitespace: $($token -ne $token.Trim())"
 
-                        if ([string]::IsNullOrWhiteSpace($user)) {
-                            throw "Docker Hub username is empty"
-                        }
-
-                        if ([string]::IsNullOrWhiteSpace($token)) {
-                            throw "Docker Hub token is empty"
-                        }
-
-                        $token | docker login --username $user --password-stdin
-
-                        if ($LASTEXITCODE -ne 0) {
-                            throw "Docker Hub login failed"
-                        }
-
-                        Write-Host "Docker Hub login succeeded."
-                    '''
+                $hash = [System.Security.Cryptography.SHA256]::Create()
+                try {
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($token)
+                    $digest = [Convert]::ToHexString($hash.ComputeHash($bytes))
+                    Write-Host "Token fingerprint: $digest"
+                } finally {
+                    $hash.Dispose()
                 }
-            }
+            '''
         }
+    }
+}
 
         stage('Push Docker Image') {
             steps {

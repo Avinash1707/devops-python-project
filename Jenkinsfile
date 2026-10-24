@@ -34,23 +34,21 @@ pipeline {
                         $user = $env:DOCKER_USER.Trim()
                         $token = $env:DOCKER_TOKEN.Trim()
 
-                        Write-Host "Docker username: $user"
-                        Write-Host "Token present: $(-not [string]::IsNullOrWhiteSpace($token))"
-                        Write-Host "Token length: $($token.Length)"
-
-                        if ($user -ne "avi1707") {
-                            throw "Unexpected Docker Hub username"
+                        if ([string]::IsNullOrWhiteSpace($user)) {
+                            throw "Docker Hub username is empty"
                         }
 
                         if ([string]::IsNullOrWhiteSpace($token)) {
                             throw "Docker Hub token is empty"
                         }
 
-                        $token | docker login -u $user --password-stdin
+                        $token | docker login --username $user --password-stdin
 
                         if ($LASTEXITCODE -ne 0) {
-                            exit $LASTEXITCODE
+                            throw "Docker Hub login failed"
                         }
+
+                        Write-Host "Docker Hub login succeeded."
                     '''
                 }
             }

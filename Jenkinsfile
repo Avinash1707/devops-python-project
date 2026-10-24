@@ -29,10 +29,19 @@ pipeline {
                     )
                 ]) {
                     powershell '''
-                        $ErrorActionPreference = "Stop"
-                        $env:DOCKER_TOKEN | docker login -u $env:DOCKER_USER --password-stdin
-                        if ($LASTEXITCODE -ne 0) {
-                            exit $LASTEXITCODE
+```powershell
+$ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($env:DOCKER_TOKEN)) {
+    throw "Docker Hub token is empty"
+}
+
+$env:DOCKER_TOKEN | docker login -u $env:DOCKER_USER --password-stdin
+
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+```
                         }
                     '''
                 }

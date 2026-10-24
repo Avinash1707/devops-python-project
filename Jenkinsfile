@@ -31,11 +31,22 @@ pipeline {
                     powershell '''
                         $ErrorActionPreference = "Stop"
 
-                        if ([string]::IsNullOrWhiteSpace($env:DOCKER_TOKEN)) {
+                        $user = $env:DOCKER_USER.Trim()
+                        $token = $env:DOCKER_TOKEN.Trim()
+
+                        Write-Host "Docker username: $user"
+                        Write-Host "Token present: $(-not [string]::IsNullOrWhiteSpace($token))"
+                        Write-Host "Token length: $($token.Length)"
+
+                        if ($user -ne "avi1707") {
+                            throw "Unexpected Docker Hub username"
+                        }
+
+                        if ([string]::IsNullOrWhiteSpace($token)) {
                             throw "Docker Hub token is empty"
                         }
 
-                        $env:DOCKER_TOKEN | docker login -u $env:DOCKER_USER --password-stdin
+                        $token | docker login -u $user --password-stdin
 
                         if ($LASTEXITCODE -ne 0) {
                             exit $LASTEXITCODE
@@ -56,9 +67,11 @@ pipeline {
         always {
             echo 'Pipeline execution completed.'
         }
+
         success {
             echo 'Docker image published successfully!'
         }
+
         failure {
             echo 'Pipeline failed. Check Console Output for details.'
         }

@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     agent any
 
@@ -58,7 +57,7 @@ pipeline {
                             Remove-Item Env:DOCKER_CONFIG -ErrorAction SilentlyContinue
                             Remove-Item $tempDockerConfig -Recurse -Force -ErrorAction SilentlyContinue
                         }
-                    '''
+                    
                 }
             }
         }

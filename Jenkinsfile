@@ -40,8 +40,7 @@ pipeline {
                 $hash = [System.Security.Cryptography.SHA256]::Create()
                 try {
                     $bytes = [System.Text.Encoding]::UTF8.GetBytes($token)
-                    $digest = [Convert]::ToHexString($hash.ComputeHash($bytes))
-                    Write-Host "Token fingerprint: $digest"
+$digest = [System.BitConverter]::ToString($hash.ComputeHash($bytes)).Replace("-", "")                    Write-Host "Token fingerprint: $digest"
                 } finally {
                     $hash.Dispose()
                 }

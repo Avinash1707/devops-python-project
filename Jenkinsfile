@@ -18,6 +18,7 @@ pipeline {
                 bat 'docker build -t %DOCKER_IMAGE%:latest .'
             }
         }
+
         stage('Login and Push to Docker Hub') {
             steps {
                 withCredentials([
@@ -29,11 +30,10 @@ pipeline {
                 ]) {
                     powershell '''
                         $ErrorActionPreference = "Stop"
-
                         $user = $env:DOCKER_USER.Trim()
                         $token = $env:DOCKER_TOKEN.Trim()
-
                         $config = Join-Path $env:WORKSPACE ".docker-config"
+
                         New-Item -ItemType Directory -Path $config -Force | Out-Null
 
                         try {
@@ -59,16 +59,20 @@ pipeline {
                 }
             }
         }
+    }
 
     post {
         always {
             echo 'Pipeline execution completed.'
         }
+
         success {
             echo 'Docker image published successfully!'
         }
+
         failure {
             echo 'Pipeline failed. Check Console Output for details.'
         }
     }
 }
+```

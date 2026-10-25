@@ -18,7 +18,6 @@ pipeline {
                 bat 'docker build -t %DOCKER_IMAGE%:latest .'
             }
         }
-
         stage('Login and Push to Docker Hub') {
             steps {
                 withCredentials([
@@ -30,21 +29,23 @@ pipeline {
                 ]) {
                     powershell '''
                         $ErrorActionPreference = "Stop"
+
                         $user = $env:DOCKER_USER.Trim()
                         $token = $env:DOCKER_TOKEN.Trim()
-                        $config = Join-Path $env:WORKSPACE ".docker-config"
 
+                        $config = Join-Path $env:WORKSPACE ".docker-config"
                         New-Item -ItemType Directory -Path $config -Force | Out-Null
 
                         try {
                             $env:DOCKER_CONFIG = $config
-                            $token | docker login --username $user --password-stdin
+
+                            $token | & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login --username $user --password-stdin
 
                             if ($LASTEXITCODE -ne 0) {
                                 throw "Docker Hub login failed"
                             }
 
-                            docker push "${env:DOCKER_IMAGE}:latest"
+                            & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push "$($env:DOCKER_IMAGE):latest"
 
                             if ($LASTEXITCODE -ne 0) {
                                 throw "Docker image push failed"
@@ -58,7 +59,6 @@ pipeline {
                 }
             }
         }
-    }
 
     post {
         always {

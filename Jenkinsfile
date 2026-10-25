@@ -52,7 +52,7 @@ stage('Login to Docker Hub') {
         }
     }
 }
-```
+
 
         stage('Push Docker Image') {
             steps {

@@ -19,7 +19,8 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub') {
+       ```groovy
+stage('Login to Docker Hub') {
     steps {
         withCredentials([
             usernamePassword(
@@ -29,25 +30,29 @@ pipeline {
             )
         ]) {
             powershell '''
-                $user = $env:DOCKER_USER
-                $token = $env:DOCKER_TOKEN
+                $ErrorActionPreference = "Stop"
 
-                Write-Host "Username matches expected value: $($user -ceq 'avi1707')"
-                Write-Host "Token is present: $(-not [string]::IsNullOrEmpty($token))"
-                Write-Host "Token length: $($token.Length)"
-                Write-Host "Token has surrounding whitespace: $($token -ne $token.Trim())"
+                $user = $env:DOCKER_USER.Trim()
+                $token = $env:DOCKER_TOKEN.Trim()
 
-                $hash = [System.Security.Cryptography.SHA256]::Create()
-                try {
-                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($token)
-$digest = [System.BitConverter]::ToString($hash.ComputeHash($bytes)).Replace("-", "")                    Write-Host "Token fingerprint: $digest"
-                } finally {
-                    $hash.Dispose()
+                if ($user -ne "avi1707") {
+                    throw "Unexpected Docker Hub username"
+                }
+
+                if ([string]::IsNullOrWhiteSpace($token)) {
+                    throw "Docker Hub token is empty"
+                }
+
+                $token | docker login --username $user --password-stdin
+
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Docker Hub login failed"
                 }
             '''
         }
     }
 }
+```
 
         stage('Push Docker Image') {
             steps {

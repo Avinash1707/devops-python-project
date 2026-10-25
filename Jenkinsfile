@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-       ```groovy
+       
 stage('Login to Docker Hub') {
     steps {
         withCredentials([

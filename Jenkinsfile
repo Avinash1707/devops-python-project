@@ -43,7 +43,14 @@ stage('Login to Docker Hub') {
                     throw "Docker Hub token is empty"
                 }
 
-                $token | docker login --username $user --password-stdin
+               $bytes = [System.Text.Encoding]::UTF8.GetBytes($token)
+$sha = [System.Security.Cryptography.SHA256]::Create()
+try {
+    $fingerprint = [System.BitConverter]::ToString($sha.ComputeHash($bytes)).Replace("-", "")
+    Write-Host "Token fingerprint: $fingerprint"
+} finally {
+    $sha.Dispose()
+}
 
                 if ($LASTEXITCODE -ne 0) {
                     throw "Docker Hub login failed"

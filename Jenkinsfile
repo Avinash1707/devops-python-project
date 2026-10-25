@@ -30,30 +30,27 @@ stage('Login to Docker Hub') {
             )
         ]) {
             powershell '''
-                $ErrorActionPreference = "Stop"
+               $ErrorActionPreference = "Stop"
 
-                $user = $env:DOCKER_USER.Trim()
-                $token = $env:DOCKER_TOKEN.Trim()
+$user = $env:DOCKER_USER.Trim()
+$token = $env:DOCKER_TOKEN.Trim()
 
-                if ($user -ne "avi1707") {
-                    throw "Unexpected Docker Hub username"
-                }
+$tempDockerConfig = Join-Path $env:TEMP "jenkins-docker-config-$env:BUILD_NUMBER"
+New-Item -ItemType Directory -Path $tempDockerConfig -Force | Out-Null
 
-                if ([string]::IsNullOrWhiteSpace($token)) {
-                    throw "Docker Hub token is empty"
-                }
+try {
+    $env:DOCKER_CONFIG = $tempDockerConfig
 
-  $token | docker login --username $user --password-stdin
+    $token | docker login --username $user --password-stdin
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Docker Hub login failed"
-}
-                if ($LASTEXITCODE -ne 0) {
-                    throw "Docker Hub login failed"
-                }
-            '''
-        }
+    if ($LASTEXITCODE -ne 0) {
+        throw "Docker Hub login failed"
     }
+}
+finally {
+    Remove-Item Env:DOCKER_CONFIG -ErrorAction SilentlyContinue
+    Remove-Item $tempDockerConfig -Recurse -Force -ErrorAction SilentlyContinue
+}
 }
 
 

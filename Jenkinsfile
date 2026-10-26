@@ -4,7 +4,11 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'avi1707/devops-python-app'
     }
-
+stage('Run Automated Tests') {
+    steps {
+        bat 'python -m unittest -v test_app.py'
+    }
+}
     stages {
         stage('Checkout') {
             steps {

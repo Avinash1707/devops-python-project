@@ -32,7 +32,7 @@ pipeline {
                         @echo off
                         echo %DOCKER_TOKEN% | docker login --username "%DOCKER_USER%" --password-stdin
                         if errorlevel 1 exit /b 1
-                        echo DOCKER_HUB_AUTHENTICATION_SUCCEEDED
+                        docker push "%DOCKER_IMAGE%:latest"
                     '''
                 }
             }

@@ -26,6 +26,19 @@ pipeline {
         }
 
        stage('Trivy Security Scan') {
+stage('Verify Non-Root User') {
+    steps {
+        bat '''
+            docker image inspect "%DOCKER_IMAGE%:latest" --format "{{.Config.User}}" > docker-user.txt
+            set /p IMAGE_USER=<docker-user.txt
+            if /I not "%IMAGE_USER%"=="appuser" (
+                echo ERROR: Docker image is not configured to run as appuser
+                exit /b 1
+            )
+            echo SUCCESS: Docker image runs as appuser
+        '''
+    }
+}
     steps {
         bat '''
             "C:\\Users\\Avinash\\AppData\\Local\\Microsoft\\WinGet\\Links\\trivy.exe" image --scanners vuln --severity HIGH,CRITICAL --format table "%DOCKER_IMAGE%:latest"

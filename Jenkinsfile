@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -38,6 +37,7 @@ pipeline {
                 }
             }
         }
+    }
 
     post {
         always {

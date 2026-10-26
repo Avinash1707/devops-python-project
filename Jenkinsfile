@@ -10,6 +10,11 @@ stage('Run Automated Tests') {
     }
 }
     stages {
+stage('Run Automated Tests') {
+    steps {
+        bat 'python -m unittest -v test_app.py'
+    }
+}
         stage('Checkout') {
             steps {
                 git branch: 'main',

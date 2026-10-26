@@ -1,1 +1,4 @@
 __pycache__/
+*.py[cod]
+*.swp
+trivy-report.json

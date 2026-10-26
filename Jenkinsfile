@@ -25,13 +25,13 @@ pipeline {
             }
         }
 
-        stage('Trivy Security Scan') {
-            steps {
-                bat '''
-                    trivy image --scanners vuln --severity HIGH,CRITICAL --format table "%DOCKER_IMAGE%:latest"
-                '''
-            }
-        }
+       stage('Trivy Security Scan') {
+    steps {
+        bat '''
+            "C:\\Users\\Avinash\\AppData\\Local\\Microsoft\\WinGet\\Links\\trivy.exe" image --scanners vuln --severity HIGH,CRITICAL --format table "%DOCKER_IMAGE%:latest"
+        '''
+    }
+}
 
         stage('Login and Push to Docker Hub') {
             steps {

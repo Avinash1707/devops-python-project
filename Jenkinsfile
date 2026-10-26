@@ -25,6 +25,14 @@ pipeline {
             }
         }
 
+        stage('Trivy Security Scan') {
+            steps {
+                bat '''
+                    trivy image --scanners vuln --severity HIGH,CRITICAL --format table "%DOCKER_IMAGE%:latest"
+                '''
+            }
+        }
+
         stage('Login and Push to Docker Hub') {
             steps {
                 withCredentials([
@@ -53,7 +61,7 @@ pipeline {
         }
 
         success {
-            echo 'Tests passed and Docker image published successfully!'
+            echo 'Tests passed, security scan completed, and Docker image published successfully!'
         }
 
         failure {

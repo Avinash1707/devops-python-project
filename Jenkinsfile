@@ -4,21 +4,18 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'avi1707/devops-python-app'
     }
-stage('Run Automated Tests') {
-    steps {
-        bat 'python -m unittest -v test_app.py'
-    }
-}
+
     stages {
-stage('Run Automated Tests') {
-    steps {
-        bat 'python -m unittest -v test_app.py'
-    }
-}
         stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Avinash1707/devops-python-project.git'
+            }
+        }
+
+        stage('Run Automated Tests') {
+            steps {
+                bat 'python -m unittest -v test_app.py'
             }
         }
 
@@ -28,7 +25,7 @@ stage('Run Automated Tests') {
             }
         }
 
-        stage('Test Docker Hub Authentication') {
+        stage('Login and Push to Docker Hub') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -41,7 +38,9 @@ stage('Run Automated Tests') {
                         @echo off
                         echo %DOCKER_TOKEN% | docker login --username "%DOCKER_USER%" --password-stdin
                         if errorlevel 1 exit /b 1
+
                         docker push "%DOCKER_IMAGE%:latest"
+                        if errorlevel 1 exit /b 1
                     '''
                 }
             }
@@ -54,11 +53,11 @@ stage('Run Automated Tests') {
         }
 
         success {
-            echo 'Docker Hub authentication test passed.'
+            echo 'Tests passed and Docker image published successfully!'
         }
 
         failure {
-            echo 'Authentication test failed. Check Console Output.'
+            echo 'Pipeline failed. Check Console Output for details.'
         }
     }
 }

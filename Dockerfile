@@ -7,10 +7,12 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get upgrade -y \
-    && python -m pip install --no-cache-dir --upgrade pip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --shell /usr/sbin/nologin appuser
 
-COPY app.py .
+COPY --chown=appuser:appuser app.py .
+
+USER appuser
 
 EXPOSE 8000
 

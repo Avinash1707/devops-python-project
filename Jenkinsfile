@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'avi1707/devops-python-app'
+        CONTAINER_NAME = 'python-app-deployment'
     }
 
     stages {
@@ -71,6 +72,49 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy Application') {
+            steps {
+                bat '''
+                    @echo off
+
+                    docker rm -f "%CONTAINER_NAME%" 2>nul
+
+                    docker run -d --name "%CONTAINER_NAME%" --restart unless-stopped -p 8000:8000 "%DOCKER_IMAGE%:latest"
+                    if errorlevel 1 exit /b 1
+
+                    echo Application container started.
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                bat '''
+                    @echo off
+
+                    set "HEALTHY="
+                    for /L %%i in (1,1,10) do (
+                        curl.exe --fail --silent http://localhost:8000 >nul
+                        if not errorlevel 1 (
+                            set "HEALTHY=yes"
+                            goto :health_done
+                        )
+                        timeout /t 3 /nobreak >nul
+                    )
+
+                    :health_done
+                    if not "%HEALTHY%"=="yes" (
+                        echo ERROR: Application health check failed.
+                        docker logs "%CONTAINER_NAME%"
+                        exit /b 1
+                    )
+
+                    echo SUCCESS: Application health check passed.
+                    curl.exe --fail --silent http://localhost:8000
+                '''
+            }
+        }
     }
 
     post {
@@ -79,7 +123,7 @@ pipeline {
         }
 
         success {
-            echo 'Tests passed, security scan completed, non-root user verified, and Docker image published successfully!'
+            echo 'Tests passed, image scanned and published, deployment completed, and health check passed.'
         }
 
         failure {

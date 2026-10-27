@@ -88,7 +88,6 @@ pipeline {
             }
         }
 
-       
         stage('Health Check') {
             steps {
                 powershell '''
@@ -124,6 +123,7 @@ pipeline {
                 '''
             }
         }
+    }
 
     post {
         always {

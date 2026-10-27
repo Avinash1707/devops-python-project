@@ -25,26 +25,31 @@ pipeline {
             }
         }
 
-       stage('Trivy Security Scan') {
-stage('Verify Non-Root User') {
-    steps {
-        bat '''
-            docker image inspect "%DOCKER_IMAGE%:latest" --format "{{.Config.User}}" > docker-user.txt
-            set /p IMAGE_USER=<docker-user.txt
-            if /I not "%IMAGE_USER%"=="appuser" (
-                echo ERROR: Docker image is not configured to run as appuser
-                exit /b 1
-            )
-            echo SUCCESS: Docker image runs as appuser
-        '''
-    }
-}
-    steps {
-        bat '''
-            "C:\\Users\\Avinash\\AppData\\Local\\Microsoft\\WinGet\\Links\\trivy.exe" image --scanners vuln --severity HIGH,CRITICAL --format table "%DOCKER_IMAGE%:latest"
-        '''
-    }
-}
+        stage('Trivy Security Scan') {
+            steps {
+                bat '''
+                    "C:\\Users\\Avinash\\AppData\\Local\\Microsoft\\WinGet\\Links\\trivy.exe" image --scanners vuln --severity HIGH,CRITICAL --format table "%DOCKER_IMAGE%:latest"
+                '''
+            }
+        }
+
+        stage('Verify Non-Root User') {
+            steps {
+                bat '''
+                    @echo off
+                    docker image inspect "%DOCKER_IMAGE%:latest" --format "{{.Config.User}}" > docker-user.txt
+                    if errorlevel 1 exit /b 1
+
+                    set /p IMAGE_USER=<docker-user.txt
+                    if /I not "%IMAGE_USER%"=="appuser" (
+                        echo ERROR: Docker image is not configured to run as appuser
+                        exit /b 1
+                    )
+
+                    echo SUCCESS: Docker image runs as appuser
+                '''
+            }
+        }
 
         stage('Login and Push to Docker Hub') {
             steps {
@@ -74,7 +79,7 @@ stage('Verify Non-Root User') {
         }
 
         success {
-            echo 'Tests passed, security scan completed, and Docker image published successfully!'
+            echo 'Tests passed, security scan completed, non-root user verified, and Docker image published successfully!'
         }
 
         failure {

@@ -88,34 +88,42 @@ pipeline {
             }
         }
 
+       
         stage('Health Check') {
             steps {
-                bat '''
-                    @echo off
+                powershell '''
+                    $healthy = $false
 
-                    set "HEALTHY="
-                    for /L %%i in (1,1,10) do (
-                        curl.exe --fail --silent http://localhost:8000 >nul
-                        if not errorlevel 1 (
-                            set "HEALTHY=yes"
-                            goto :health_done
-                        )
-                        timeout /t 3 /nobreak >nul
-                    )
+                    for ($i = 1; $i -le 10; $i++) {
+                        try {
+                            $response = Invoke-WebRequest `
+                                -UseBasicParsing `
+                                -Uri "http://localhost:8000" `
+                                -TimeoutSec 3
 
-                    :health_done
-                    if not "%HEALTHY%"=="yes" (
-                        echo ERROR: Application health check failed.
-                        docker logs "%CONTAINER_NAME%"
-                        exit /b 1
-                    )
+                            if ($response.StatusCode -eq 200) {
+                                $healthy = $true
+                                Write-Output "Application response: $($response.Content)"
+                                break
+                            }
+                        }
+                        catch {
+                            Write-Output "Health check attempt $i failed. Retrying..."
+                        }
 
-                    echo SUCCESS: Application health check passed.
-                    curl.exe --fail --silent http://localhost:8000
+                        Start-Sleep -Seconds 3
+                    }
+
+                    if (-not $healthy) {
+                        Write-Error "Application health check failed."
+                        docker logs $env:CONTAINER_NAME
+                        exit 1
+                    }
+
+                    Write-Output "SUCCESS: Application health check passed."
                 '''
             }
         }
-    }
 
     post {
         always {

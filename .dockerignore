@@ -1,0 +1,25 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Git files
+.git/
+.gitignore
+
+# Trivy scan reports
+trivy-report.json
+trivy-report.txt
+trivy-high.json
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+venv/
+.venv/
+
+# Editor files
+.vscode/
+.idea/

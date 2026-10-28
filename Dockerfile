@@ -7,8 +7,9 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get upgrade -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && useradd --create-home --shell /usr/sbin/nologin appuser
+    && python -m pip install --no-cache-dir --upgrade pip \
+    && useradd --create-home --shell /usr/sbin/nologin appuser \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=appuser:appuser app.py .
 

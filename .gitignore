@@ -2,3 +2,5 @@ __pycache__/
 *.py[cod]
 *.swp
 trivy-report.json
+trivy-high.json
+trivy-report.txt
